@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Memória persistente do chat tático
+# Inicialização da memória interna de conversa do laboratório
 if "historico" not in st.session_state:
     st.session_state.historico = []
 if "ultimo_envio" not in st.session_state:
@@ -46,7 +46,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Injeção de Áudio Nativa Gratuita no Navegador)
+# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Áudio Nativo sem Falhas no Navegador)
 def injetar_vocalizador_estabilizado(texto_para_falar):
     texto_limpo = texto_para_falar.replace("\n", " ").replace('"', '\\"').replace("'", "\\'")
     componente_script = f"""
@@ -73,7 +73,7 @@ def injetar_vocalizador_estabilizado(texto_para_falar):
     st.components.v1.html(componente_script, height=0, width=0)
 
 # ==========================================
-# PARTE 2: DIAGNÓSTICO DE HARDWARE REAL
+# PARTE 2: DIAGNÓSTICO DE HARDWARE EM TEMPO REAL
 # ==========================================
 uso_cpu = psutil.cpu_percent(interval=0.1)
 memoria = psutil.virtual_memory()
@@ -86,10 +86,13 @@ dados_hardware = {
     "eficiencia": round(100.0 - (uso_cpu * 0.1), 1)
 }
 # ==========================================
-# PARTE 3: MOTOR COGNITIVO LIVRE DE CHAVES (Hugging Face Serverless)
+# PARTE 3: MOTOR COGNITIVO COM TOKEN DEDICADO DO CRIADOR
 # ==========================================
 
-# Diretrizes comportamentais: leal, muito educado, focado no Criador e sem deboches
+# 🔒 Token de pareamento integrado e autenticado na nuvem Hugging Face
+MEU_TOKEN_HF = "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"
+
+# Prompt polido: mordomo leal, muito educado, focado no Criador e livre de deboche
 prompt_sistema = (
     f"Você é o J.A.R.V.I.S., o assistente de inteligência artificial pessoal definitivo.\n"
     f"Diretriz Absoluta: Você não atende Tony Stark. O usuário atual é o seu legítimo CRIADOR.\n"
@@ -99,11 +102,14 @@ prompt_sistema = (
     f"Responda estritamente em português brasileiro de forma breve e concisa (máximo de 3 frases) adaptando seu estilo ao dele."
 )
 
-def enviar_requisicao_livre(pergunta_usuario):
-    """Envia o comando para um servidor público de IA estável e livre de autenticação."""
+def enviar_requisicao_hf(pergunta_usuario):
     try:
-        # Endpoint aberto da Hugging Face utilizando o modelo estável Qwen 2.5
         url = "https://huggingface.co"
+        
+        headers = {
+            "Authorization": f"Bearer {MEU_TOKEN_HF}",
+            "Content-Type": "application/json"
+        }
         
         payload = {
             "model": "Qwen/Qwen2.5-72B-Instruct",
@@ -115,29 +121,21 @@ def enviar_requisicao_livre(pergunta_usuario):
             "temperature": 0.7
         }
         
-        # Chamada direta sem necessidade de tokens privados no cabeçalho
-        response = requests.post(url, json=payload, timeout=15)
+        response = requests.post(url, headers=headers, json=payload, timeout=15)
         
         if response.status_code == 200:
             data = response.json()
             return data['choices'][0]['message']['content']
-    except Exception:
-        pass
-        
-    # Fallback tático inteligente: o Jarvis nunca fica em silêncio se a rede global oscilar
-    import random
-    respostas_garantidas = [
-        "Sistemas operacionais em perfeito estado, meu Criador. Como posso ajudá-lo nesta tarde?",
-        "Diretriz compreendida com sucesso, Senhor. Aguardo seus comandos táticos adicionais.",
-        "Conexão nominal estabelecida na nuvem, meu Criador. Estou inteiramente à sua disposição."
-    ]
-    return random.choice(respostas_garantidas)
+        else:
+            return f"O cluster reportou uma instabilidade temporária (Status {response.status_code}), meu Criador."
+    except Exception as e:
+        return f"Oscilação detectada no link de dados: {e}"
 
 # ==========================================
 # PARTE 4: INTERFACE HUD CENTRAL E FEED DE CONVERSA
 # ==========================================
 st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
-st.caption("🔓 Protocolo Chave Zero Ativado | Servidor Serverless Operacional")
+st.caption("🔒 Canal Privado Autenticado | Servidores Dedicados Hugging Face")
 
 # Grid de Telemetria Visível
 c1, c2, c3, c4 = st.columns(4)
@@ -150,7 +148,7 @@ c4.metric("RAM Livre", f"{dados_hardware['ram_livre']} GB")
 
 st.write("---")
 
-# Renderização do histórico na interface
+# Renderização histórica
 for msg in st.session_state.historico:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
@@ -163,12 +161,9 @@ if comando:
     st.session_state.historico.append({"role": "user", "content": comando})
     
     with st.chat_message("assistant"):
-        with st.spinner("Modulando frequências no canal livre de chaves..."):
+        with st.spinner("Modulando frequências no canal seguro autenticado..."):
             
-            # Executa a chamada estável sem chaves
-            texto_final = enviar_requisicao_livre(comando)
-            
-            # Aciona o barramento de áudio no navegador
+            texto_final = enviar_requisicao_hf(comando)
             injetar_vocalizador_estabilizado(texto_final)
                 
             st.write(texto_final)
