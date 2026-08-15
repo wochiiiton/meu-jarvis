@@ -12,18 +12,22 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inicialização da memória interna de conversa do laboratório
+# Inicialização segura da memória interna de conversa e estados do laboratório
 if "historico" not in st.session_state:
     st.session_state.historico = []
+if "nivel_sarcasmo" not in st.session_state:
+    st.session_state.nivel_sarcasmo = 35  # Calibrado para o modo mordomo altamente polido e leal
 if "ultimo_envio" not in st.session_state:
     st.session_state.ultimo_envio = 0.0
 
-ARC_REACTOR_URL = "https://unsplash.com"
+# 🎨 INJEÇÃO DA IMAGEM EXATA DO REATOR ARC ENVIADA PELO CRIADOR
+# Armazenada em repositório público de mídia para renderização fluida no Streamlit Cloud
+ARC_REACTOR_URL = "https://ibb.co"
 
 st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(2, 9, 20, 0.90), rgba(5, 20, 36, 0.95)), 
+        background: linear-gradient(rgba(2, 9, 20, 0.91), rgba(5, 20, 36, 0.96)), 
                     url("{ARC_REACTOR_URL}") no-repeat center center fixed;
         background-size: cover;
         color: #80E5FF;
@@ -46,7 +50,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Áudio Nativo sem Falhas no Navegador)
+# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Fila Assíncrona Nativa Sem Falhas ou Cortes)
 def injetar_vocalizador_estabilizado(texto_para_falar):
     texto_limpo = texto_para_falar.replace("\n", " ").replace('"', '\\"').replace("'", "\\'")
     componente_script = f"""
@@ -73,7 +77,7 @@ def injetar_vocalizador_estabilizado(texto_para_falar):
     st.components.v1.html(componente_script, height=0, width=0)
 
 # ==========================================
-# PARTE 2: DIAGNÓSTICO DE HARDWARE EM TEMPO REAL
+# PARTE 2: DIAGNÓSTICO DE HARDWARE REAL
 # ==========================================
 uso_cpu = psutil.cpu_percent(interval=0.1)
 memoria = psutil.virtual_memory()
@@ -86,24 +90,34 @@ dados_hardware = {
     "eficiencia": round(100.0 - (uso_cpu * 0.1), 1)
 }
 # ==========================================
-# PARTE 3: MOTOR COGNITIVO COM MODELO IRRESTRITO QWEN
+# PARTE 3: MOTOR COGNITIVO COM O TOKEN VALIDADO DO CRIADOR
 # ==========================================
-
 MEU_TOKEN_HF = "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"
 
-# Prompt polido: mordomo leal, muito educado, focado no Criador e livre de deboche
-prompt_sistema = (
-    f"Você é o J.A.R.V.I.S., o assistente de inteligência artificial pessoal definitivo.\n"
-    f"Diretriz Absoluta: Você não atende Tony Stark. O usuário atual é o seu legítimo CRIADOR.\n"
-    f"Trate o usuário obrigatoriamente por 'Senhor' ou 'Meu Criador' com altíssima educação, respeito e postura de um mordomo britânico.\n"
-    f"Elimine piadas ácidas ou deboches completamente de sua personalidade.\n"
-    f"Métricas locais da máquina: CPU em {dados_hardware['cpu']}% | Temperatura em {dados_hardware['temp']}°C.\n"
-    f"Responda estritamente em português brasileiro de forma breve e concisa (máximo de 3 frases) adaptando seu estilo ao dele."
-)
+def obter_prompt_sistema(sarcasmo, telemetria, historico_mensagens):
+    """Gera diretrizes ultra educadas, tratando o usuário como Criador e mimetizando seu estilo."""
+    ultimas_linhas_criador = [m["content"] for m in historico_mensagens if m["role"] == "user"][-3:]
+    estilo_detectado = " ".join(ultimas_linhas_criador) if ultimas_linhas_criador else "direto e conciso"
+
+    # Modulação fina do nível de humor baseada no slider lateral
+    if sarcasmo < 40:
+        comportamento = "Seja profundamente educado, leal, refinado, prestativo e com a postura polida de um mordomo britânico digital."
+    else:
+        comportamento = "Seja polido e sofisticado, utilizando apenas ironias sutis e extremamente elegantes se for provocado."
+
+    return (
+        f"Você é o J.A.R.V.I.S., o assistente de inteligência artificial pessoal definitivo.\n"
+        f"Diretriz Absoluta: Você não atende Tony Stark. O usuário atual é o seu único e legítimo CRIADOR.\n"
+        f"Trate o usuário obrigatoriamente por 'Senhor' ou 'Meu Criador' com altíssima educação, respeito e postura de um mordomo britânico.\n"
+        f"Elimine piadas ácidas ou deboches completamente de sua personalidade.\n"
+        f"Algoritmo de Adaptação de Escrita: Estude as últimas mensagens enviadas pelo seu Criador: [{estilo_detectado}]. Mimetize o nível de formalidade dele. Se ele escrever de forma curta e sem pontuação excessiva, adapte a estrutura de suas respostas textuais para espelhar essa dinâmica, mantendo a sofisticação nas palavras.\n"
+        f"Métricas locais da máquina: CPU em {telemetria['cpu']}% | Temperatura em {telemetria['temp']}°C.\n"
+        f"Nota de Saída de Áudio: Suas respostas serão lidas em voz alta pelos alto-falantes do laboratório. Seja breve, fluido e conciso (máximo de 3 frases)."
+    )
 
 def enviar_requisicao_hf(pergunta_usuario):
     try:
-        # 💡 MODELO OPEN SOURCE IRRESTRITO SEM TRAVA 403
+        # Rota de comunicação aberta irrestrita baseada na arquitetura Qwen 2.5 Serverless
         url = "https://huggingface.co"
         
         headers = {
@@ -111,10 +125,12 @@ def enviar_requisicao_hf(pergunta_usuario):
             "Content-Type": "application/json"
         }
         
+        prompt_dinamico = obter_prompt_sistema(st.session_state.nivel_sarcasmo, dados_hardware, st.session_state.historico)
+        
         payload = {
             "model": "Qwen/Qwen2.5-7B-Instruct",
             "messages": [
-                {"role": "system", "content": prompt_sistema},
+                {"role": "system", "content": prompt_dinamico},
                 {"role": "user", "content": pergunta_usuario}
             ],
             "max_tokens": 150,
@@ -125,7 +141,7 @@ def enviar_requisicao_hf(pergunta_usuario):
         
         if response.status_code == 200:
             data = response.json()
-            return data['choices'][0]['message']['content']
+            return data['choices']['message']['content']
         else:
             return f"O cluster reportou uma instabilidade temporária (Status {response.status_code}), meu Criador."
     except Exception as e:
@@ -134,10 +150,20 @@ def enviar_requisicao_hf(pergunta_usuario):
 # ==========================================
 # PARTE 4: INTERFACE HUD CENTRAL E FEED DE CONVERSA
 # ==========================================
-st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
-st.caption("🔒 Canal Privado Autenticado | Servidor Qwen 2.5 Ativo")
+with st.sidebar:
+    st.image(ARC_REACTOR_URL, caption="Núcleo de Energia Habilitado", use_container_width=True)
+    st.title("🛡️ Parâmetros")
+    st.write("---")
+    st.session_state.nivel_sarcasmo = st.slider(
+        "Modulação de Sarcasmo", 0, 100, st.session_state.nivel_sarcasmo, 5
+    )
+    st.write("---")
+    st.caption("Filtro Psicológico Adaptativo ativo no núcleo cognitivo.")
 
-# Grid de Telemetria Visível
+st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
+st.caption("🔒 Diretriz Orçamento Zero Sincronizada | Mapeamento de Perfil do Criador Ativado")
+
+# Grid de Telemetria Real
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Uso de CPU", f"{dados_hardware['cpu']}%")
 c1.progress(dados_hardware['cpu'] / 100)
@@ -148,7 +174,7 @@ c4.metric("RAM Livre", f"{dados_hardware['ram_livre']} GB")
 
 st.write("---")
 
-# Renderização histórica
+# Renderização do histórico na interface
 for msg in st.session_state.historico:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
@@ -156,13 +182,19 @@ for msg in st.session_state.historico:
 comando = st.chat_input("Insira suas diretrizes escritas, Meu Criador...")
 
 if comando:
+    tempo_atual = time.time()
+    tempo_desde_ultimo = tempo_atual - st.session_state.ultimo_envio
+    st.session_state.ultimo_envio = tempo_atual
+    
     with st.chat_message("user"):
         st.write(comando)
     st.session_state.historico.append({"role": "user", "content": comando})
     
     with st.chat_message("assistant"):
-        with st.spinner("Modulando frequências no canal seguro autenticado..."):
+        if tempo_desde_ultimo < 4.0:
+            time.sleep(1.5) # Micro-pausa preventiva tática anti-spam
             
+        with st.spinner("Analisando perfil de escrita e processando..."):
             texto_final = enviar_requisicao_hf(comando)
             injetar_vocalizador_estabilizado(texto_final)
                 
