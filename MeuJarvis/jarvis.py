@@ -86,7 +86,7 @@ dados_hardware = {
     "eficiencia": round(100.0 - (uso_cpu * 0.1), 1)
 }
 # ==========================================
-# PARTE 3: MOTOR COGNITIVO COM TOKEN E ENDPOINT ABERTO METALLAMA
+# PARTE 3: MOTOR COGNITIVO COM MODELO IRRESTRITO QWEN
 # ==========================================
 
 MEU_TOKEN_HF = "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"
@@ -103,22 +103,22 @@ prompt_sistema = (
 
 def enviar_requisicao_hf(pergunta_usuario):
     try:
-        # 💡 ALTERAÇÃO TÁTICA: Endpoint do Llama 3, 100% liberado de travas 403
+        # 💡 MODELO OPEN SOURCE IRRESTRITO SEM TRAVA 403
         url = "https://huggingface.co"
         
         headers = {
-            "Authorization": f"Bearer {MEU_TOKEN_HF}",
+            "Authorization": f"Bearer {MEU_TOKEN_HF.strip()}",
             "Content-Type": "application/json"
         }
         
         payload = {
-            "model": "meta-llama/Meta-Llama-3-8B-Instruct",
+            "model": "Qwen/Qwen2.5-7B-Instruct",
             "messages": [
                 {"role": "system", "content": prompt_sistema},
                 {"role": "user", "content": pergunta_usuario}
             ],
             "max_tokens": 150,
-            "temperature": 0.6
+            "temperature": 0.7
         }
         
         response = requests.post(url, headers=headers, json=payload, timeout=15)
@@ -135,7 +135,7 @@ def enviar_requisicao_hf(pergunta_usuario):
 # PARTE 4: INTERFACE HUD CENTRAL E FEED DE CONVERSA
 # ==========================================
 st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
-st.caption("🔒 Canal Privado Autenticado | Servidor Meta Llama 3 Ativo")
+st.caption("🔒 Canal Privado Autenticado | Servidor Qwen 2.5 Ativo")
 
 # Grid de Telemetria Visível
 c1, c2, c3, c4 = st.columns(4)
