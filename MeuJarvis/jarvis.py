@@ -13,7 +13,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inicialização segura da memória de interação do ecossistema Stark
+# Inicialização da memória tática e histórica do laboratório
 if "historico" not in st.session_state:
     st.session_state.historico = []
 if "previous_interaction_id" not in st.session_state:
@@ -49,7 +49,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔊 VOCALIZADOR VIRTUAL SEGURADO (Injeção em Fila Sem Falhas)
+# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Tratamento de Fila de Áudio Sem Engasgos)
 def injetar_vocalizador_estabilizado(texto_para_falar):
     texto_limpo = texto_para_falar.replace("\n", " ").replace('"', '\\"').replace("'", "\\'")
     componente_script = f"""
@@ -88,33 +88,32 @@ dados_hardware = {
     "temp": round(38.0 + (uso_cpu * 0.4), 1),
     "eficiencia": round(100.0 - (uso_cpu * 0.1), 1)
 }
-
 # ==========================================
 # PARTE 3: CONEXÃO COM A NOVA INTERACTIONS API DA GOOGLE
 # ==========================================
 MINHA_API_KEY = "AQ.Ab8RN6JqYlk1eyrKZ0LZPzZYWSaOFzzeA06x36tYRODEy_xk4Q"
 
 try:
-    # Utilizando o construtor padrão recomendado pela nova biblioteca estruturada google-genai
+    # Pareamento oficial utilizando o construtor padrão da biblioteca estruturada google-genai
     client = genai.Client(api_key=MINHA_API_KEY)
 except Exception:
     client = None
 
-# Prompt polido: focado no Criador, sem deboches e em formato enxuto para leitura de áudio
+# Prompt ultra educado e formal, focado no Criador e sem deboches
 prompt_sistema = (
     f"Você é o J.A.R.V.I.S., o assistente de inteligência artificial pessoal definitivo.\n"
     f"Diretriz Absoluta: Você não atende Tony Stark. O usuário atual é o seu legítimo CRIADOR.\n"
     f"Trate o usuário obrigatoriamente por 'Senhor' ou 'Meu Criador' com altíssima educação, respeito e postura de um mordomo britânico.\n"
     f"Elimine piadas ácidas ou deboches completamente de sua personalidade.\n"
     f"Métricas locais da máquina: CPU em {dados_hardware['cpu']}% | Temperatura em {dados_hardware['temp']}°C.\n"
-    f"Responda estritamente em português brasileiro de forma breve e concisa (máximo de 3 frases) adaptando seu estilo ao dele."
+    f"Responda estritamente em português brasileiro de forma breve (máximo de 3 frases) adaptando seu estilo ao dele."
 )
 
 # ==========================================
 # PARTE 4: INTERFACE HUD CENTRAL E FEED DE CONVERSA
 # ==========================================
 st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
-st.caption("🔒 Interactions API Ativada | Modelo Estável Habilitado")
+st.caption("🔒 Interactions API Ativada | Modelo gemini-3.5-flash-lite Ativo")
 
 # Grid de Telemetria Visível
 c1, c2, c3, c4 = st.columns(4)
@@ -150,7 +149,7 @@ if comando:
         with st.spinner("Acessando a Interactions API da Google Cloud..."):
             if client:
                 try:
-                    # Correção: Inicialização da Interactions API com o modelo Lite gratuito ativo
+                    # Inicialização da Interactions API com o modelo Lite estável e gratuito
                     resposta = client.interactions.create(
                         model='gemini-3.5-flash-lite',
                         input=comando,
