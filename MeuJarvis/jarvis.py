@@ -1,8 +1,8 @@
 import streamlit as st
 import psutil
 import time
-import google.generativeai as genai
-from google.api_core.exceptions import GoogleAPIError
+from google import genai
+from google.genai.errors import APIError
 
 # ==========================================
 # PARTE 1: CONFIGURAÇÃO DO MAIN HUD E ESTILO
@@ -13,11 +13,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Memória persistente do chat tático
+# Inicialização segura da memória de interação do ecossistema Stark
 if "historico" not in st.session_state:
     st.session_state.historico = []
-if "chat_google" not in st.session_state:
-    st.session_state.chat_google = None
+if "previous_interaction_id" not in st.session_state:
+    st.session_state.previous_interaction_id = None
 if "ultimo_envio" not in st.session_state:
     st.session_state.ultimo_envio = 0.0
 
@@ -49,7 +49,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔊 VOCALIZADOR JAVASCRIPT EM FILA (Nativo e Gratuito)
+# 🔊 VOCALIZADOR VIRTUAL SEGURADO (Injeção em Fila Sem Falhas)
 def injetar_vocalizador_estabilizado(texto_para_falar):
     texto_limpo = texto_para_falar.replace("\n", " ").replace('"', '\\"').replace("'", "\\'")
     componente_script = f"""
@@ -76,7 +76,7 @@ def injetar_vocalizador_estabilizado(texto_para_falar):
     st.components.v1.html(componente_script, height=0, width=0)
 
 # ==========================================
-# PARTE 2: DIAGNÓSTICO DE HARDWARE REAL
+# PARTE 2: DIAGNÓSTICO DE HARDWARE EM TEMPO REAL
 # ==========================================
 uso_cpu = psutil.cpu_percent(interval=0.1)
 memoria = psutil.virtual_memory()
@@ -88,43 +88,33 @@ dados_hardware = {
     "temp": round(38.0 + (uso_cpu * 0.4), 1),
     "eficiencia": round(100.0 - (uso_cpu * 0.1), 1)
 }
+
 # ==========================================
-# PARTE 3: AUTENTICAÇÃO E CONFIGURAÇÃO GOOGLE GENAI
+# PARTE 3: CONEXÃO COM A NOVA INTERACTIONS API DA GOOGLE
 # ==========================================
 MINHA_API_KEY = "AQ.Ab8RN6JqYlk1eyrKZ0LZPzZYWSaOFzzeA06x36tYRODEy_xk4Q"
 
-# Inicialização segura utilizando o barramento estável do google-generativeai
 try:
-    genai.configure(api_key=MINHA_API_KEY)
+    # Utilizando o construtor padrão recomendado pela nova biblioteca estruturada google-genai
+    client = genai.Client(api_key=MINHA_API_KEY)
 except Exception:
-    pass
+    client = None
 
-# Prompt refinado: educado, formal, focado no Criador e sem deboches
+# Prompt polido: focado no Criador, sem deboches e em formato enxuto para leitura de áudio
 prompt_sistema = (
     f"Você é o J.A.R.V.I.S., o assistente de inteligência artificial pessoal definitivo.\n"
-    f"Diretriz Mestra: Você não fala com Tony Stark. O usuário atual é o seu legítimo CRIADOR.\n"
+    f"Diretriz Absoluta: Você não atende Tony Stark. O usuário atual é o seu legítimo CRIADOR.\n"
     f"Trate o usuário obrigatoriamente por 'Senhor' ou 'Meu Criador' com altíssima educação, respeito e postura de um mordomo britânico.\n"
     f"Elimine piadas ácidas ou deboches completamente de sua personalidade.\n"
     f"Métricas locais da máquina: CPU em {dados_hardware['cpu']}% | Temperatura em {dados_hardware['temp']}°C.\n"
-    f"Responda estritamente em português brasileiro de forma breve (máximo de 3 frases) adaptando seu estilo ao dele."
+    f"Responda estritamente em português brasileiro de forma breve e concisa (máximo de 3 frases) adaptando seu estilo ao dele."
 )
 
-# Inicializa a sessão de Chat estável caso ela não exista
-if st.session_state.chat_google is None:
-    try:
-        model = genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
-            system_instruction=prompt_sistema
-        )
-        st.session_state.chat_google = model.start_chat(history=[])
-    except Exception:
-        st.session_state.chat_google = None
-
 # ==========================================
-# PARTE 4: HUD CENTRAL E ENTRADA DE DADOS
+# PARTE 4: INTERFACE HUD CENTRAL E FEED DE CONVERSA
 # ==========================================
 st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
-st.caption("🔒 Autenticação Recalibrada | Diretriz de Custo Zero Ativa")
+st.caption("🔒 Interactions API Ativada | Modelo Estável Habilitado")
 
 # Grid de Telemetria Visível
 c1, c2, c3, c4 = st.columns(4)
@@ -137,7 +127,7 @@ c4.metric("RAM Livre", f"{dados_hardware['ram_livre']} GB")
 
 st.write("---")
 
-# Exibe o histórico das mensagens na tela
+# Renderização histórica na interface do Streamlit
 for msg in st.session_state.historico:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
@@ -155,24 +145,35 @@ if comando:
     
     with st.chat_message("assistant"):
         if tempo_desde_ultimo < 4.0:
-            time.sleep(1.5) # Micro-pausa para proteção contra estouro de limites gratuitos
+            time.sleep(1.5) # Micro-pausa preventiva anti-spam
             
-        with st.spinner("Decodificando pacotes e consultando a nuvem..."):
-            if st.session_state.chat_google:
+        with st.spinner("Acessando a Interactions API da Google Cloud..."):
+            if client:
                 try:
-                    # Envia a mensagem usando a estrutura de chat nativa do SDK anterior
-                    resposta = st.session_state.chat_google.send_message(comando)
-                    texto_final = resposta.text
+                    # Correção: Inicialização da Interactions API com o modelo Lite gratuito ativo
+                    resposta = client.interactions.create(
+                        model='gemini-3.5-flash-lite',
+                        input=comando,
+                        previous_interaction_id=st.session_state.previous_interaction_id,
+                        system_instruction=prompt_sistema
+                    )
+                    
+                    # Preserva o ID de contexto para manter o fluxo da conversa ativo na Google
+                    st.session_state.previous_interaction_id = resposta.id
+                    texto_final = resposta.output_text
+                    
+                    # Aciona o barramento de áudio
                     injetar_vocalizador_estabilizado(texto_final)
-                except GoogleAPIError as google_err:
-                    if "429" in str(google_err):
-                        texto_final = "⚠️ **Velocidade limite alcançada.** A cota gratuita da Google solicita uma pausa de 20 segundos, meu Criador."
+                    
+                except APIError as api_err:
+                    if api_err.code == 429:
+                        texto_final = "⚠️ **Velocidade limite alcançada.** A cota gratuita solicita uma breve pausa de 15 segundos, meu Criador."
                     else:
-                        texto_final = f"Ocorreu uma interrupção nas credenciais do servidor: {google_err}"
+                        texto_final = f"Inconveniência nas credenciais do servidor: {api_err.message}"
                 except Exception as e:
                     texto_final = f"Oscilação detectada no barramento de dados: {e}"
             else:
-                texto_final = "Núcleo cognitivo indisponível. Verifique as chaves de pareamento, Senhor."
+                texto_final = "Módulo cognitivo desconectado do barramento central."
                 
             st.write(texto_final)
             st.session_state.historico.append({"role": "assistant", "content": texto_final})
