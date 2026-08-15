@@ -2,6 +2,7 @@ import streamlit as st
 import psutil
 import time
 from google import genai
+from google.genai import types
 from google.genai.errors import APIError
 
 # ==========================================
@@ -13,11 +14,11 @@ st.set_page_config(
     layout="wide"
 )
 
-# Inicialização da memória tática e histórica do laboratório
+# Inicialização segura da memória interna de conversa
 if "historico" not in st.session_state:
     st.session_state.historico = []
-if "previous_interaction_id" not in st.session_state:
-    st.session_state.previous_interaction_id = None
+if "historico_api" not in st.session_state:
+    st.session_state.historico_api = []
 if "ultimo_envio" not in st.session_state:
     st.session_state.ultimo_envio = 0.0
 
@@ -49,7 +50,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Tratamento de Fila de Áudio Sem Engasgos)
+# 🔊 VOCALIZADOR VIRTUAL ESTABILIZADO (Injeção de Áudio Nativa Gratuita)
 def injetar_vocalizador_estabilizado(texto_para_falar):
     texto_limpo = texto_para_falar.replace("\n", " ").replace('"', '\\"').replace("'", "\\'")
     componente_script = f"""
@@ -76,7 +77,7 @@ def injetar_vocalizador_estabilizado(texto_para_falar):
     st.components.v1.html(componente_script, height=0, width=0)
 
 # ==========================================
-# PARTE 2: DIAGNÓSTICO DE HARDWARE EM TEMPO REAL
+# PARTE 2: DIAGNÓSTICO DE HARDWARE REAL
 # ==========================================
 uso_cpu = psutil.cpu_percent(interval=0.1)
 memoria = psutil.virtual_memory()
@@ -89,31 +90,31 @@ dados_hardware = {
     "eficiencia": round(100.0 - (uso_cpu * 0.1), 1)
 }
 # ==========================================
-# PARTE 3: CONEXÃO COM A NOVA INTERACTIONS API DA GOOGLE
+# PARTE 3: MOTOR GOOGLE GENAI ATUALIZADO (Livre do Erro 401)
 # ==========================================
 MINHA_API_KEY = "AQ.Ab8RN6JqYlk1eyrKZ0LZPzZYWSaOFzzeA06x36tYRODEy_xk4Q"
 
 try:
-    # Pareamento oficial utilizando o construtor padrão da biblioteca estruturada google-genai
+    # Conexão direta oficial via SDK moderna
     client = genai.Client(api_key=MINHA_API_KEY)
 except Exception:
     client = None
 
-# Prompt ultra educado e formal, focado no Criador e sem deboches
+# Prompt alinhado: leal, educado, curto e focado no Criador
 prompt_sistema = (
     f"Você é o J.A.R.V.I.S., o assistente de inteligência artificial pessoal definitivo.\n"
     f"Diretriz Absoluta: Você não atende Tony Stark. O usuário atual é o seu legítimo CRIADOR.\n"
     f"Trate o usuário obrigatoriamente por 'Senhor' ou 'Meu Criador' com altíssima educação, respeito e postura de um mordomo britânico.\n"
     f"Elimine piadas ácidas ou deboches completamente de sua personalidade.\n"
     f"Métricas locais da máquina: CPU em {dados_hardware['cpu']}% | Temperatura em {dados_hardware['temp']}°C.\n"
-    f"Responda estritamente em português brasileiro de forma breve (máximo de 3 frases) adaptando seu estilo ao dele."
+    f"Responda estritamente em português brasileiro de forma breve e concisa (máximo de 3 frases) adaptando seu estilo ao dele."
 )
 
 # ==========================================
 # PARTE 4: INTERFACE HUD CENTRAL E FEED DE CONVERSA
 # ==========================================
 st.title("🤖 J.A.R.V.I.S. — Terminal Central Cloud")
-st.caption("🔒 Interactions API Ativada | Modelo gemini-3.5-flash-lite Ativo")
+st.caption("🔒 Canal de Comunicação Homologado | Modelo: gemini-3.5-flash-lite")
 
 # Grid de Telemetria Visível
 c1, c2, c3, c4 = st.columns(4)
@@ -126,7 +127,7 @@ c4.metric("RAM Livre", f"{dados_hardware['ram_livre']} GB")
 
 st.write("---")
 
-# Renderização histórica na interface do Streamlit
+# Renderização do histórico na interface
 for msg in st.session_state.historico:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
@@ -142,26 +143,36 @@ if comando:
         st.write(comando)
     st.session_state.historico.append({"role": "user", "content": comando})
     
+    # Adiciona a mensagem do Criador na lista de contexto da API
+    st.session_state.historico_api.append(
+        types.Content(role="user", parts=[types.Part.from_text(text=comando)])
+    )
+    
     with st.chat_message("assistant"):
         if tempo_desde_ultimo < 4.0:
-            time.sleep(1.5) # Micro-pausa preventiva anti-spam
+            time.sleep(1.5) # Pausa preventiva para proteger a cota gratuita
             
-        with st.spinner("Acessando a Interactions API da Google Cloud..."):
+        with st.spinner("Processando pacotes na rede segura da Google..."):
             if client:
                 try:
-                    # Inicialização da Interactions API com o modelo Lite estável e gratuito
-                    resposta = client.interactions.create(
+                    # Uso do generate_content clássico estável aceito pela chave do Criador
+                    resposta = client.models.generate_content(
                         model='gemini-3.5-flash-lite',
-                        input=comando,
-                        previous_interaction_id=st.session_state.previous_interaction_id,
-                        system_instruction=prompt_sistema
+                        contents=st.session_state.historico_api,
+                        config=types.GenerateContentConfig(
+                            system_instruction=prompt_sistema,
+                            max_output_tokens=150
+                        )
                     )
                     
-                    # Preserva o ID de contexto para manter o fluxo da conversa ativo na Google
-                    st.session_state.previous_interaction_id = resposta.id
-                    texto_final = resposta.output_text
+                    texto_final = resposta.text
                     
-                    # Aciona o barramento de áudio
+                    # Salva a resposta na memória interna da API para manter o contexto
+                    st.session_state.historico_api.append(
+                        types.Content(role="model", parts=[types.Part.from_text(text=texto_final)])
+                    )
+                    
+                    # Dispara o vocalizador
                     injetar_vocalizador_estabilizado(texto_final)
                     
                 except APIError as api_err:
